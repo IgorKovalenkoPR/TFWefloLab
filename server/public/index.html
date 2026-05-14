@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#00C2FF" />
+    <title>TFWefloLab — Testfort Webflow Laboratory</title>
+    <!-- TestFort visual identity: Inter for clean enterprise-QA tone -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>
+          <span class="wm-tf">TF</span><span class="wm-weflo">Weflo</span><span class="wm-lab">Lab</span>
+          <span class="wm-tagline">Testfort Webflow Laboratory</span>
+        </h1>
+      </div>
+      <nav class="tabs">
+        <button data-tab="run" class="active">Run</button>
+        <button data-tab="reports">Reports</button>
+        <button data-tab="history">History</button>
+        <button data-tab="sites">Sites</button>
+        <button data-tab="guide">Guide</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- ============ RUN TAB ============ -->
+      <section id="tab-run" class="tab visible">
+        <div class="grid">
+          <aside class="panel">
+            <h2>1. Sites</h2>
+            <div class="control-row">
+              <button id="btn-select-all-sites" class="link">all</button>
+              <button id="btn-clear-sites" class="link">none</button>
+              <button id="btn-go-sites" class="link" title="Go to Sites tab to add or edit URLs">+ add / edit URLs →</button>
+            </div>
+            <div id="sites-list" class="checkbox-list"></div>
+            <p class="hint">Tip: to <strong>add</strong> or <strong>edit</strong> URLs, open the <a href="#" id="link-sites-tab">Sites tab</a>.</p>
+
+            <h2>2. Test types</h2>
+            <div class="control-row">
+              <button id="btn-select-all-types" class="link">all</button>
+              <button id="btn-clear-types" class="link">none</button>
+            </div>
+            <div id="types-list" class="checkbox-list"></div>
+
+            <h2>3. Browsers / devices</h2>
+            <div class="control-row">
+              <label>Config:
+                <select id="config-select">
+                  <option value="local">Local (emulation)</option>
+                  <option value="realdevice">Real Device Emulation (DevTools-grade)</option>
+                  <option value="browserstack">BrowserStack (real desktop)</option>
+                </select>
+              </label>
+            </div>
+            <div id="bs-creds-banner" class="banner banner-warn" hidden>
+              BrowserStack credentials not detected. Add them to <code>.env</code> in the project root:
+              <pre class="banner-snippet">BROWSERSTACK_USERNAME=your_user
+BROWSERSTACK_ACCESS_KEY=your_key</pre>
+              Then restart <code>npm run dashboard</code>.
+            </div>
+            <div class="control-row">
+              <button id="btn-select-all-projects" class="link">all</button>
+              <button id="btn-clear-projects" class="link">none</button>
+              <button id="btn-preset-desktop" class="link">desktop</button>
+              <button id="btn-preset-mobile" class="link">mobile</button>
+              <button id="btn-preset-tablet" class="link">tablet</button>
+            </div>
+            <div id="projects-list" class="checkbox-list"></div>
+
+            <h2>4. Options</h2>
+            <label class="toggle" id="opt-headed-label">
+              <input type="checkbox" id="opt-headed" />
+              <span>Headed (show browser)</span>
+            </label>
+            <p id="opt-headed-hint" class="hint">Opens a real browser window on your computer during the run. <strong>Local config only.</strong></p>
+            <label class="toggle" id="opt-update-snapshots-label">
+              <input type="checkbox" id="opt-update-snapshots" />
+              <span>Update visual baselines</span>
+            </label>
+            <p class="hint">Use this on the <strong>first</strong> visual-regression run, or after intentional UI changes. Adds <code>--update-snapshots</code>.</p>
+
+            <button id="btn-run" class="primary">▶ Run tests</button>
+          </aside>
+
+          <section class="panel main-panel">
+            <div class="run-header">
+              <h2 id="run-title">Idle</h2>
+              <div id="run-summary" class="summary"></div>
+            </div>
+            <div id="run-progress" class="run-progress" hidden>
+              <div class="run-progress-bar"><div class="run-progress-fill" id="run-progress-fill"></div></div>
+              <div class="run-progress-meta">
+                <span id="run-progress-counts">0 / 0</span>
+                <span class="muted" id="run-progress-eta">elapsed 0s · ETA —</span>
+              </div>
+            </div>
+            <div id="run-tabs" class="result-tabs" hidden>
+              <button data-result-tab="bugs">🐞 Bugs <span id="bugs-count" class="count"></span></button>
+              <button data-result-tab="walkthrough">Findings <span id="walk-count" class="count"></span></button>
+              <button data-result-tab="log">Log</button>
+              <button data-result-tab="failures">Failures <span id="failure-count" class="count"></span></button>
+              <button data-result-tab="passes">Passes <span id="pass-count" class="count-good"></span></button>
+            </div>
+            <pre id="run-log" class="log">Pick sites + tests + projects, then press Run.</pre>
+            <div id="run-bugs" class="failures" hidden></div>
+            <div id="run-failures" class="failures" hidden></div>
+            <div id="run-passes" class="failures" hidden></div>
+            <div id="run-walkthrough" class="failures" hidden></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS TAB ============ -->
+      <section id="tab-reports" class="tab">
+        <div class="panel">
+          <div class="control-row">
+            <h2 style="margin: 0">Reports</h2>
+            <button id="btn-refresh-reports" class="link">refresh</button>
+          </div>
+          <div id="reports-controls" class="control-row"></div>
+          <iframe id="report-frame" class="report-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        </div>
+      </section>
+
+      <!-- ============ HISTORY TAB ============ -->
+      <section id="tab-history" class="tab">
+        <div class="panel">
+          <div class="control-row">
+            <h2 style="margin: 0">Recent runs</h2>
+            <button id="btn-refresh-history" class="link">refresh</button>
+          </div>
+          <table class="history">
+            <thead>
+              <tr><th>When</th><th>Tests</th><th>Sites</th><th>Projects</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="history-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ GUIDE TAB ============ -->
+      <section id="tab-guide" class="tab">
+        <!-- Hero -->
+        <div class="guide-hero">
+          <div class="guide-hero-text">
+            <div class="guide-hero-eyebrow">
+              <span class="wm-tf">TF</span><span class="wm-weflo">Weflo</span><span class="wm-lab">Lab</span> · Testfort Webflow Laboratory
+            </div>
+            <h1>End-to-end QA for Webflow sites — without the spreadsheets.</h1>
+            <p>One dashboard for crawler-style audits, real-user E2E flows, visual regression, accessibility, SEO, performance, and Webflow-specific (IX2, <code>.w-form</code>, <code>.w-tabs</code>, <code>.w-slider</code>, AI components) on Local / Real-Device-Emulation / BrowserStack. Built &amp; maintained by the <a href="https://testfort.com/" target="_blank" rel="noopener" style="color:var(--tf-blue);">TestFort</a> QA team.</p>
+            <div class="guide-hero-actions">
+              <button class="primary" data-action="audit" style="width:auto;margin:0;">▶ Run my first audit</button>
+              <button class="secondary" data-action="docs">Read full docs</button>
+            </div>
+          </div>
+          <div class="guide-hero-meta">
+            <div class="guide-hero-stat"><strong>9</strong><span>test types</span></div>
+            <div class="guide-hero-stat"><strong>3</strong><span>configs</span></div>
+            <div class="guide-hero-stat"><strong>~20</strong><span>checks/page</span></div>
+            <div class="guide-hero-stat"><strong>3</strong><span>export formats</span></div>
+          </div>
+        </div>
+
+        <!-- Numbered quick-start -->
+        <div class="panel">
+          <h2 style="margin-top: 0;">5-minute quick start</h2>
+          <ol class="guide-steps">
+            <li>
+              <span class="guide-step-num">1</span>
+              <div>
+                <h3>Add the URLs you want to test</h3>
+                <p>Open <strong>Sites</strong> tab → paste a site's homepage URL into the <em>Discover pages</em> field → click <em>Discover pages →</em>. The tool reads <code>sitemap.xml</code> and lets you tick which pages to add. Press <em>Save</em>.</p>
+                <button class="link" data-action="quickstart">Open the Sites tab →</button>
+              </div>
+            </li>
+            <li>
+              <span class="guide-step-num">2</span>
+              <div>
+                <h3>Pick what to run</h3>
+                <p>On the <strong>Run</strong> tab, tick at least one test type. <em>Site audit</em> gives you the broadest overview (Screaming Frog–style report); the others target specific concerns (Functional, Visual, A11y, etc.). When <em>Site audit</em> is the only one ticked, the rest of the form is auto-disabled — audit is a standalone crawler.</p>
+                <button class="link" data-action="audit">Pre-tick Site audit →</button>
+              </div>
+            </li>
+            <li>
+              <span class="guide-step-num">3</span>
+              <div>
+                <h3>Choose where to test</h3>
+                <p>Three Configs:
+                  <strong>Local</strong> (Playwright on your machine — fast, free) ·
+                  <strong>Real Device Emulation</strong> (DevTools-grade — touch, real DPR, real Chrome/Safari channels, video on every test) ·
+                  <strong>BrowserStack</strong> (real Windows / macOS desktop browsers via cloud).</p>
+                <p class="muted" style="margin: 4px 0 0;">⚠ BrowserStack <em>Playwright Web Automate</em> doesn't support real iOS / Android (it's a BS product limit). For mobile/tablet, use <em>Real Device Emulation</em>.</p>
+              </div>
+            </li>
+            <li>
+              <span class="guide-step-num">4</span>
+              <div>
+                <h3>Run, watch the log, read the report</h3>
+                <p>Press <strong>▶ Run tests</strong>. The log streams live. After the run a Failures tab appears with bug-report cards (project, scenario, expected vs received, inline screenshots), and three download buttons: <strong>↓ CSV / XLSX / PDF</strong>. Site audits open as filterable HTML in the Reports tab.</p>
+                <button class="link" data-action="reports">See the Reports tab →</button>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Section: Setup -->
+        <h2 class="guide-section-title">Setup</h2>
+        <div class="guide-grid">
+          <article class="guide-card" data-action="bs-creds">
+            <div class="guide-icon">🔑</div>
+            <h3>BrowserStack credentials</h3>
+            <p>Copy <code>.env.example</code> → <code>.env</code>, paste username + access key, restart <code>npm run dashboard</code>. Auto-loaded — no <code>export</code> / <code>$env:</code>. Banner has <em>REST check</em> and <em>Diagnose connection</em> (real WS handshake) buttons.</p>
+            <div class="guide-cta">Set up →</div>
+          </article>
+          <article class="guide-card" data-action="self-check">
+            <div class="guide-icon">✅</div>
+            <h3>Health check</h3>
+            <p><code>npm run check</code> validates Node, deps, Playwright browsers, configs, every spec, BS creds, and that the dashboard server boots. Green ✓ / yellow ! / red ✗ with "what to do" hints.</p>
+            <div class="guide-cta">Run in terminal</div>
+          </article>
+          <article class="guide-card" data-action="quickstart">
+            <div class="guide-icon">🌐</div>
+            <h3>Add URLs (sitemap discover)</h3>
+            <p>Sites tab → enter homepage → <em>Discover pages →</em>. Webflow auto-publishes <code>sitemap.xml</code>; the tool parses it and lets you bulk-add pages. Drops UTM params automatically.</p>
+            <div class="guide-cta">Open Sites tab →</div>
+          </article>
+        </div>
+
+        <!-- Section: Run tests -->
+        <h2 class="guide-section-title">Run tests</h2>
+        <div class="guide-grid">
+          <article class="guide-card guide-accent" data-action="audit">
+            <div class="guide-icon">🕷</div>
+            <h3>Site audit (start here)</h3>
+            <p>Crawler-style report. Visits every page from sitemap, runs ~20 checks per page (broken links, missing meta, broken images, layout overflow, mixed content, console errors, a11y, security…), groups findings by severity + category, with per-page screenshots in a filterable HTML.</p>
+            <div class="guide-cta">Pre-tick on Run tab →</div>
+          </article>
+          <article class="guide-card" data-action="types">
+            <div class="guide-icon">🧪</div>
+            <h3>9 test types</h3>
+            <p>Audit · Functional · Responsive (10 viewports) · <strong>Site exploration</strong> (E2E: clicks, forms, pagination, redirects, social, CTAs) · Visual regression · <strong>Webflow-specific</strong> (.w-form / .w-tabs / .w-dropdown / .w-slider / .w-lightbox / IX2 / smooth-scroll / 404) · A11y (axe + keyboard) · SEO · Broken links · Performance (Lighthouse).</p>
+            <div class="guide-cta">Full list in ONBOARDING.md</div>
+          </article>
+          <article class="guide-card" data-action="webflow">
+            <div class="guide-icon">🎨</div>
+            <h3>Webflow + AI components</h3>
+            <p>Tests Webflow's runtime conventions and adapts to Webflow Components / AI-generated output (which render as standard HTML with <code>w-*</code> classes). All tests are gated on component presence — if there's no <code>.w-slider</code>, the slider test skips, doesn't fail.</p>
+            <div class="guide-cta">Run Webflow spec →</div>
+          </article>
+          <article class="guide-card" data-action="local-vs-bs">
+            <div class="guide-icon">🌍</div>
+            <h3>3 configs · choose wisely</h3>
+            <p><strong>Local</strong> for daily fast iteration. <strong>Real Device Emulation</strong> for mobile/tablet (DevTools-grade with throttling, video). <strong>BrowserStack</strong> for real-Safari and real-Edge verification on RC builds.</p>
+            <div class="guide-cta">Pick on Run tab →</div>
+          </article>
+          <article class="guide-card" data-action="bs-catalog">
+            <div class="guide-icon">📚</div>
+            <h3>BrowserStack catalog (live)</h3>
+            <p>BS supports thousands of OS/browser combinations. Click below to fetch your plan's full live catalog (cached 1h). The 7 BS desktop projects we ship are a sensible default — edit <code>playwright.browserstack.config.js</code> to add more.</p>
+            <div class="guide-cta">Browse →</div>
+          </article>
+        </div>
+
+        <!-- Section: Reports -->
+        <h2 class="guide-section-title">Reports &amp; exports</h2>
+        <div class="guide-grid">
+          <article class="guide-card" data-action="reports">
+            <div class="guide-icon">📊</div>
+            <h3>Bug-report-style failures</h3>
+            <p>After every run: Failures tab with cards per bug — project, scenario, expected vs received, inline thumbnail screenshots (click to enlarge in lightbox). Visual regression shows expected/actual/diff trio.</p>
+            <div class="guide-cta">Open Reports tab →</div>
+          </article>
+          <article class="guide-card" data-action="reports">
+            <div class="guide-icon">📥</div>
+            <h3>Export CSV / XLSX / PDF</h3>
+            <p><strong>CSV</strong> Excel-ready (UTF-8 BOM). <strong>XLSX</strong> Bug Report sheet with autoFilter and clickable screenshot hyperlinks. <strong>PDF</strong> opens print-friendly bug-report layout (severity badges, expected/received side-by-side, screenshots inline).</p>
+            <div class="guide-cta">Available in summary →</div>
+          </article>
+          <article class="guide-card" data-action="docs">
+            <div class="guide-icon">📖</div>
+            <h3>Reference docs</h3>
+            <p>Two files in the project root: <strong>ONBOARDING.md</strong> (this in depth, plus troubleshooting and "what 'all good' looks like") and <strong>README.md</strong> (every test type, every CLI script, every config knob).</p>
+            <div class="guide-cta">Open in editor</div>
+          </article>
+        </div>
+
+        <!-- BS catalog inline panel (toggled by Browse card) -->
+        <div id="bs-catalog-panel" class="panel" style="margin-top: 18px;" hidden>
+          <div class="control-row">
+            <h3 style="margin: 0;">BrowserStack catalog (live from your plan)</h3>
+            <button id="btn-load-bs-catalog" class="link">Reload</button>
+            <span id="bs-catalog-status" class="muted"></span>
+          </div>
+          <p class="muted" style="margin: 4px 0 8px;">Each row is something you could add to <code>playwright.browserstack.config.js</code> as a project. Note: real iOS/Android <em>aren't</em> in this list for Playwright Web Automate (BS limitation).</p>
+          <div class="control-row">
+            <input type="text" id="bs-catalog-filter" placeholder="Filter (e.g. Sonoma, Firefox, Windows 11)…" style="flex:1;min-width:240px;" />
+          </div>
+          <div id="bs-catalog-list"></div>
+        </div>
+      </section>
+
+      <!-- ============ SITES TAB ============ -->
+      <section id="tab-sites" class="tab">
+        <div class="panel">
+          <h2>Configured sites</h2>
+          <p class="muted">Add or edit the URLs you want tested. Changes are saved to <code>config/urls.json</code> and take effect immediately — no server restart needed.</p>
+
+          <div class="discover-block">
+            <strong>Discover all pages of a site</strong>
+            <p class="muted" style="margin: 4px 0;">Reads the site's <code>sitemap.xml</code> (Webflow auto-publishes one) so you can pick which pages to add — much better coverage than testing only the homepage.</p>
+            <div class="control-row">
+              <input type="url" id="discover-url" placeholder="https://yourdomain.webflow.io/" style="flex: 1; min-width: 260px;" />
+              <button id="btn-discover" class="primary" style="width: auto; margin: 0;">Discover pages →</button>
+            </div>
+            <div id="discover-results" hidden></div>
+          </div>
+
+          <table class="sites">
+            <thead>
+              <tr><th>Name</th><th>URL</th><th>Title contains</th><th>Smoke selectors (comma-sep)</th><th></th></tr>
+            </thead>
+            <tbody id="sites-rows"></tbody>
+          </table>
+          <button id="btn-add-site" class="link">+ add row</button>
+          <div class="control-row">
+            <button id="btn-save-sites" class="primary">Save</button>
+            <span id="save-status" class="muted"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="tf-footer">
+      <strong>TFWefloLab</strong> — a Webflow-focused QA workbench ·
+      Built on Playwright + axe-core + Lighthouse ·
+      Powered by <a href="https://testfort.com/" target="_blank" rel="noopener">TestFort</a>
+    </footer>
+
+    <!-- Floating "Back to top" button — appears once the user scrolls past
+         a screen. Useful on long Result panes (Bugs / Findings) where
+         scrolling all the way back manually is annoying. -->
+    <button id="back-to-top" type="button" class="back-to-top" aria-label="Back to top" title="Back to top" hidden>
+      <span class="bt-arrow" aria-hidden="true">↑</span>
+      <span class="bt-label">Top</span>
+    </button>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "name": "tfweflolab",
+  "version": "2.0.0",
+  "description": "TFWefloLab — Testfort Webflow Laboratory. A focused QA workbench for Webflow-built sites: crawler-style audit, deep E2E user-flow tests on .w-form / .w-tabs / .w-dropdown / .w-slider / IX2 / AI components, visual regression, accessibility, SEO, performance. Built on Playwright + axe-core + Lighthouse. Powered by TestFort.",
+  "private": true,
+  "scripts": {
+    "install:browsers": "playwright install --with-deps",
+    "setup": "node scripts/team-setup.js",
+    "dashboard": "node server/server.js",
+    "share": "node scripts/share.js",
+    "test": "playwright test",
+    "test:walkthrough": "playwright test tests/walkthrough.spec.js",
+    "test:functional": "playwright test tests/functional.spec.js",
+    "test:responsive": "playwright test tests/responsive.spec.js",
+    "test:visual": "playwright test tests/visual.spec.js",
+    "test:visual:update": "playwright test tests/visual.spec.js --update-snapshots",
+    "test:a11y": "playwright test tests/accessibility.spec.js",
+    "test:seo": "playwright test tests/seo.spec.js",
+    "test:links": "playwright test tests/broken-links.spec.js",
+    "test:exploration": "playwright test tests/exploration.spec.js",
+    "test:webflow": "playwright test tests/webflow.spec.js",
+    "test:tablet-bugs": "playwright test tests/tablet-bugs.spec.js",
+    "test:desktop": "playwright test --project=\"Desktop Chrome (Windows 11)\" --project=\"Desktop Firefox (Windows 11)\" --project=\"Desktop Edge (Windows 11)\" --project=\"Desktop Chrome (macOS)\" --project=\"Desktop Safari (macOS)\"",
+    "test:mobile": "playwright test --project=\"Mobile Chrome (Android - Pixel 7)\" --project=\"Mobile Safari (iPhone 14)\" --project=\"Mobile Chrome (iOS - iPhone 14)\"",
+    "test:tablet": "playwright test --project=\"Tablet Safari (iPad Pro 11)\" --project=\"Tablet Chrome (iPad Pro 11)\" --project=\"Tablet Chrome (Android - Galaxy Tab S4)\"",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:performance": "node lighthouse/audit.js",
+    "audit": "node audit/audit.js",
+    "check": "node scripts/self-check.js",
+    "test:dashboard": "node scripts/dashboard-test.js",
+    "audit:mobile": "node audit/audit.js --device mobile",
+    "audit:tablet": "node audit/audit.js --device tablet",
+    "test:bs": "playwright test --config playwright.browserstack.config.js",
+    "test:realdevice": "playwright test --config playwright.realdevice.config.js",
+    "test:realdevice:mobile": "playwright test --config playwright.realdevice.config.js --project=\"RD iPhone 14\" --project=\"RD Pixel 7\" --project=\"RD Galaxy S9+\"",
+    "test:realdevice:tablet": "playwright test --config playwright.realdevice.config.js --project=\"RD iPad Pro 11\" --project=\"RD Galaxy Tab S4\"",
+    "test:bs:windows": "playwright test --config playwright.browserstack.config.js --project=\"BS Chromium (Windows 11)\" --project=\"BS Firefox (Windows 11)\" --project=\"BS Chromium (Windows 10)\"",
+    "test:bs:macos": "playwright test --config playwright.browserstack.config.js --project=\"BS Chromium (macOS Sonoma)\" --project=\"BS Firefox (macOS Sonoma)\" --project=\"BS Safari / WebKit (macOS Sonoma)\" --project=\"BS Safari / WebKit (macOS Ventura)\"",
+    "report": "playwright show-report"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.48.0",
+    "chrome-launcher": "^1.1.2",
+    "lighthouse": "^12.2.1"
+  }
+}

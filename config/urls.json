@@ -1,0 +1,23 @@
+{
+  "_comment": "Add the Webflow URLs you need to cover. Each entry is tested in every project (browser/device) defined in playwright.config.js. Use { name, url, smokeSelectors[]?, expectedTitleIncludes? }.",
+  "sites": [
+    {
+      "name": "Brightit",
+      "url": "https://www.brightit.com/",
+      "smokeSelectors": [
+        "nav",
+        "footer",
+        "header"
+      ]
+    },
+    {
+      "name": "Soft2bet",
+      "url": "https://www.soft2bet.com/",
+      "smokeSelectors": [
+        "nav",
+        "footer",
+        "header"
+      ]
+    }
+  ]
+}
