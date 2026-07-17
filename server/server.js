@@ -1573,7 +1573,8 @@ const DOC_WHITELIST = ['ONBOARDING.md', 'README.md', 'TEST-RESULTS.md', 'AUDIT.m
 app.get('/docs/', (req, res) => {
   const which = String(req.query.f || 'ONBOARDING.md');
   if (!DOC_WHITELIST.includes(which)) return res.status(404).send('not found');
-  const full = path.join(ROOT, which);
+  const full = path.resolve(ROOT, which);
+  if (!full.startsWith(ROOT + path.sep)) return res.status(404).send('not found');
   if (!fs.existsSync(full)) return res.status(404).send('not found');
   const md = fs.readFileSync(full, 'utf8');
   // Render via marked from CDN — keeps server zero-dep on markdown libs.
